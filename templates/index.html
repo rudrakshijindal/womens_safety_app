@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="container position-relative">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-7">
+        <span class="hero-pill"><i class="bi bi-stars me-1"></i> Verified Guardian Network - academic prototype</span>
+        <h1 class="hero-title mt-3">Help is closer<br>than you think.</h1>
+        <p class="hero-sub">
+          {{ app_name }} connects people who need help with community guardians that an administrator
+          has reviewed and approved. The nearest guardians on duty are matched by distance,
+          and the requester can follow the status of the request.
+        </p>
+        <div class="d-flex flex-wrap gap-2 mt-4">
+          {% if current_user.is_authenticated %}
+            <a class="btn btn-light btn-lg px-4 fw-semibold" href="{{ url_for('main.dashboard') if current_user.role == 'user' else url_for('admin.dashboard') if current_user.role == 'admin' else (url_for('guardian.dashboard') if endpoint_exists('guardian.dashboard') else url_for('main.index')) }}">
+              <i class="bi bi-speedometer2 me-2"></i>Go to my dashboard
+            </a>
+          {% else %}
+            <a class="btn btn-light btn-lg px-4 fw-semibold" href="{{ url_for('auth.register') }}">
+              <i class="bi bi-person-plus me-2"></i>Create account
+            </a>
+            <a class="btn btn-outline-light btn-lg px-4" href="{{ url_for('auth.login') }}">Log in</a>
+            {% if endpoint_exists('guardian.register') %}
+              <a class="btn btn-link text-white fw-semibold" href="{{ url_for('guardian.register') }}">Become a guardian <i class="bi bi-arrow-right"></i></a>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+      <div class="col-lg-5 d-none d-lg-block">
+        <div class="hero-card">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="hero-card-icon"><i class="bi bi-bell-fill"></i></div>
+            <div>
+              <div class="fw-semibold">New request nearby</div>
+              <div class="small text-muted">about 1.8 km from you</div>
+            </div>
+          </div>
+          <div class="hero-line"></div>
+          <div class="d-flex align-items-center justify-content-between mt-3">
+            <span class="status-badge status-pending">Pending</span>
+            <span class="small text-muted">sample illustration</span>
+          </div>
+          <div class="d-flex gap-2 mt-3">
+            <span class="btn btn-rose btn-sm flex-fill disabled">Accept</span>
+            <span class="btn btn-outline-secondary btn-sm flex-fill disabled">Reject</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="container section-pad">
+  <div class="text-center mb-5">
+    <h2 class="section-title">Built around trust</h2>
+    <p class="text-muted mx-auto" style="max-width:36rem">
+      Every part of the network is designed so that only reviewed people can respond,
+      and so that private details stay private.
+    </p>
+  </div>
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="card card-soft feature-card h-100">
+        <div class="card-body p-4">
+          <div class="feature-icon"><i class="bi bi-person-check-fill"></i></div>
+          <h3 class="h5 mt-3">Approved by admin</h3>
+          <p class="text-muted mb-0">Guardians apply with their details. They can respond to requests only after an administrator approves them.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card card-soft feature-card h-100">
+        <div class="card-body p-4">
+          <div class="feature-icon"><i class="bi bi-geo-alt-fill"></i></div>
+          <h3 class="h5 mt-3">Nearest first</h3>
+          <p class="text-muted mb-0">Approved guardians who are on duty are ranked by distance using the Haversine formula. Only approximate distance is shown.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card card-soft feature-card h-100">
+        <div class="card-body p-4">
+          <div class="feature-icon"><i class="bi bi-activity"></i></div>
+          <h3 class="h5 mt-3">Clear status</h3>
+          <p class="text-muted mb-0">Requests move from pending to accepted to resolved, and the person who asked for help sees each change.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="steps-band">
+  <div class="container section-pad">
+    <h2 class="section-title text-center mb-5">How it works</h2>
+    <div class="row g-4">
+      {% for number, title, text in [
+        (1, 'Guardian applies', 'A volunteer registers with an organisation and ID proof note. The application starts as pending.'),
+        (2, 'Admin approves', 'An administrator reviews the application. The guardian is told the decision through a notification.'),
+        (3, 'Guardian goes on duty', 'Approved guardians set a location and switch on duty so they can be matched.'),
+        (4, 'Request is matched', 'Nearby guardians see the request. The first to accept is shown to the requester.')
+      ] %}
+      <div class="col-md-6 col-lg-3">
+        <div class="step-card h-100">
+          <div class="step-number">{{ number }}</div>
+          <h3 class="h6 fw-semibold mt-3">{{ title }}</h3>
+          <p class="small text-muted mb-0">{{ text }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="container section-pad">
+  <div class="row g-4 align-items-stretch">
+    <div class="col-lg-6">
+      <div class="card card-soft h-100">
+        <div class="card-body p-4">
+          <h3 class="h5 mb-3">What this prototype does</h3>
+          <ul class="list-unstyled mb-0 honest-list">
+            <li><i class="bi bi-check-circle-fill text-success"></i> Creates in-app alerts and notifications</li>
+            <li><i class="bi bi-check-circle-fill text-success"></i> Matches guardians by real distance calculation</li>
+            <li><i class="bi bi-check-circle-fill text-success"></i> Stores every response with a timestamp</li>
+            <li><i class="bi bi-check-circle-fill text-success"></i> Keeps passwords hashed and forms CSRF protected</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card card-soft h-100">
+        <div class="card-body p-4">
+          <h3 class="h5 mb-3">What it does not do</h3>
+          <ul class="list-unstyled mb-0 honest-list">
+            <li><i class="bi bi-x-circle-fill text-danger"></i> It does not send SMS or make phone calls</li>
+            <li><i class="bi bi-x-circle-fill text-danger"></i> It does not contact the police</li>
+            <li><i class="bi bi-x-circle-fill text-danger"></i> It does not track location in the background</li>
+            <li><i class="bi bi-x-circle-fill text-danger"></i> Sample guardians use simulated locations</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

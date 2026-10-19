@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}My dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-md-5">
+  <div class="page-head mb-4">
+    <h1 class="section-title mb-1">Hello, {{ current_user.name.split()[0] }}</h1>
+    <p class="text-muted mb-0">Here is where you can follow your requests and notifications.</p>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="card card-soft">
+        <div class="card-header bg-transparent border-0 pt-4 px-4">
+          <h2 class="h5 mb-0"><i class="bi bi-clock-history me-2 text-rose"></i>My emergency requests</h2>
+        </div>
+        <div class="card-body px-4 pb-4">
+          {% if my_requests %}
+            <div class="table-responsive">
+              <table class="table table-borderless align-middle table-soft mb-0">
+                <thead>
+                  <tr><th>#</th><th>Created</th><th>Status</th><th>Responding guardian</th></tr>
+                </thead>
+                <tbody>
+                  {% for r in my_requests %}
+                  <tr>
+                    <td class="fw-semibold">{{ r.id }}</td>
+                    <td>{{ r.created_at | ist }}</td>
+                    <td>{{ status_badge(r.status) }}</td>
+                    <td>{{ r.accepted_by.name if r.accepted_by else '-' }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            <p class="small text-muted mt-3 mb-0">
+              Demo status: in-app alert records only. External SMS or call delivery is not configured.
+            </p>
+          {% else %}
+            <div class="empty-state">
+              <i class="bi bi-inbox"></i>
+              <p class="mb-0">You have not made any emergency requests yet.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card card-soft mb-4">
+        <div class="card-body p-4">
+          <h2 class="h5"><i class="bi bi-person-badge me-2 text-rose"></i>My account</h2>
+          <dl class="mb-0 small">
+            <dt class="text-muted fw-normal">Name</dt><dd>{{ current_user.name }}</dd>
+            <dt class="text-muted fw-normal">Email</dt><dd>{{ current_user.email }}</dd>
+            <dt class="text-muted fw-normal">Mobile</dt><dd class="mb-0">{{ current_user.phone or 'Not added' }}</dd>
+          </dl>
+        </div>
+      </div>
+      <div class="card card-soft info-card">
+        <div class="card-body p-4">
+          <h2 class="h6"><i class="bi bi-telephone-fill me-2"></i>In an emergency</h2>
+          <p class="small mb-0">Call <strong>112</strong> (national emergency number) or <strong>1091</strong> (women's helpline). Please verify these numbers yourself.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
