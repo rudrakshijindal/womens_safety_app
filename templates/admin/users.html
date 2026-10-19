@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Users{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-md-5">
+  <div class="page-head mb-4">
+    <h1 class="section-title mb-1">Users</h1>
+    <p class="text-muted mb-0">Everyone registered on the site. Passwords are stored only as hashes and are never shown.</p>
+  </div>
+
+  <div class="card card-soft">
+    <div class="card-body px-4 py-4">
+      <div class="table-responsive">
+        <table class="table table-borderless align-middle table-soft mb-0">
+          <thead><tr><th>Name</th><th>Email</th><th>Mobile</th><th>Role</th><th>Joined</th></tr></thead>
+          <tbody>
+            {% for u in users %}
+            <tr>
+              <td class="fw-semibold">{{ u.name }}</td>
+              <td>{{ u.email }}</td>
+              <td>{{ u.phone or '-' }}</td>
+              <td><span class="role-pill role-{{ u.role }}">{{ u.role }}</span></td>
+              <td class="small">{{ u.created_at | ist }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,6 +1,8 @@
 from math import asin, cos, radians, sin, sqrt
 
-from models import GuardianProfile
+from extensions import db
+from models import GuardianProfile, RequestMatch
+from services.notifications import notify
 
 
 def haversine_km(lat1, lon1, lat2, lon2):
@@ -43,3 +45,32 @@ def find_eligible_guardians(lat, lng, limit=5):
             }
         )
     return results
+
+
+def dispatch_to_guardians(emergency_request, matches):
+    """Link matched guardians to a request and send each an in-app notification.
+
+    The SOS feature (Teammate 2) calls this right after creating an EmergencyRequest:
+
+        matches = find_eligible_guardians(req.latitude, req.longitude, limit=5)
+        dispatch_to_guardians(req, matches)
+
+    Returns how many guardians were matched. In-app notification only; nothing is sent by SMS.
+    """
+    for m in matches:
+        db.session.add(
+            RequestMatch(
+                request_id=emergency_request.id,
+                guardian_id=m["guardian_id"],
+                distance_km=m["distance_km"],
+            )
+        )
+        notify(
+            m["guardian_id"],
+            "emergency_request",
+            f"New emergency request about {m['distance_km']} km from you (in-app demo alert).",
+            "/guardian/dashboard",
+            commit=False,
+        )
+    db.session.commit()
+    return len(matches)

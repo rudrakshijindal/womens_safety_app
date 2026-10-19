@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import status_badge %}
+{% from "_macros.html" import status_badge, stat_card %}
 {% block title %}Guardian dashboard{% endblock %}
 
 {% block content %}
@@ -9,7 +9,92 @@
       <h1 class="section-title mb-1">Guardian dashboard</h1>
       <p class="text-muted mb-0">{{ current_user.name }}{% if profile.organisation %} - {{ profile.organisation }}{% endif %}</p>
     </div>
-    {{ status_badge(profile.status) }}
+    <div class="d-flex align-items-center gap-2">
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('guardian.dashboard') }}"><i class="bi bi-arrow-clockwise me-1"></i>Refresh</a>
+      {{ status_badge(profile.status) }}
+    </div>
+  </div>
+
+  {# ---------- metrics ---------- #}
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">{{ stat_card('check2-circle', 'Accepted', data.metrics.accepted, 'green') }}</div>
+    <div class="col-6 col-lg-3">{{ stat_card('x-circle', 'Declined', data.metrics.rejected, 'rose') }}</div>
+    <div class="col-6 col-lg-3">{{ stat_card('award', 'Resolved', data.metrics.resolved, 'burgundy') }}</div>
+    <div class="col-6 col-lg-3">
+      {{ stat_card('stopwatch', 'Avg. response (min)', data.metrics.avg_response_min if data.metrics.avg_response_min is not none else '-', 'amber') }}
+    </div>
+  </div>
+
+  {# ---------- active request(s) ---------- #}
+  {% for r in data.active %}
+  <div class="card card-soft active-card mb-4">
+    <div class="card-body p-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+        <div>
+          <h2 class="h5 mb-1"><i class="bi bi-exclamation-triangle-fill me-2 text-rose"></i>Active request #{{ r.id }}</h2>
+          <div class="text-muted small">Accepted {{ r.accepted_at | ist }}</div>
+        </div>
+        {{ status_badge(r.status) }}
+      </div>
+      <dl class="row mt-3 mb-3">
+        <dt class="col-sm-3 text-muted fw-normal">Requester</dt><dd class="col-sm-9">{{ r.user.name }}</dd>
+        <dt class="col-sm-3 text-muted fw-normal">Mobile</dt><dd class="col-sm-9">{{ r.user.phone or 'Not provided' }}</dd>
+        <dt class="col-sm-3 text-muted fw-normal">Location</dt>
+        <dd class="col-sm-9 mb-0">
+          {{ '%.4f' | format(r.latitude) }}, {{ '%.4f' | format(r.longitude) }}
+          {% if r.location_is_simulated %}<span class="status-badge status-pending ms-1">Simulated</span>{% endif %}
+          <a class="ms-2 small" target="_blank" rel="noopener" href="https://www.google.com/maps?q={{ r.latitude }},{{ r.longitude }}">Open in Maps <i class="bi bi-box-arrow-up-right"></i></a>
+        </dd>
+      </dl>
+      <form method="post" action="{{ url_for('guardian.resolve', request_id=r.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-burgundy"><i class="bi bi-check2-all me-2"></i>Mark as resolved</button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+
+  {# ---------- incoming requests ---------- #}
+  <div class="card card-soft mb-4">
+    <div class="card-header bg-transparent border-0 pt-4 px-4">
+      <h2 class="h5 mb-0"><i class="bi bi-inbox me-2 text-rose"></i>Incoming requests ({{ data.incoming|length }})</h2>
+    </div>
+    <div class="card-body px-4 pb-4">
+      {% if data.incoming %}
+        <div class="table-responsive">
+          <table class="table table-borderless align-middle table-soft mb-0">
+            <thead><tr><th>Request</th><th>Distance from you</th><th>Received</th><th class="text-end">Your response</th></tr></thead>
+            <tbody>
+              {% for m in data.incoming %}
+              <tr>
+                <td class="fw-semibold">#{{ m.request_id }}</td>
+                <td>about {{ m.distance_km }} km</td>
+                <td>{{ m.request.created_at | ago }}</td>
+                <td class="text-end text-nowrap">
+                  <form method="post" action="{{ url_for('guardian.respond', request_id=m.request_id) }}" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="action" value="accept">
+                    <button class="btn btn-sm btn-rose px-3">Accept</button>
+                  </form>
+                  <form method="post" action="{{ url_for('guardian.respond', request_id=m.request_id) }}" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="action" value="reject">
+                    <button class="btn btn-sm btn-outline-secondary px-3">Reject</button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <p class="small text-muted mt-3 mb-0">The requester's details are shown only after you accept. Alerts are in-app demo records.</p>
+      {% else %}
+        <div class="empty-state">
+          <i class="bi bi-bell-slash"></i>
+          <p class="mb-0">No open requests right now. {% if not profile.on_duty %}Go on duty to be matched.{% endif %}</p>
+        </div>
+      {% endif %}
+    </div>
   </div>
 
   <div class="row g-4">
@@ -25,11 +110,7 @@
             {% endif %}
           </div>
           <p class="small text-muted">
-            {% if profile.on_duty %}
-              You can be matched to nearby emergency requests.
-            {% else %}
-              Switch on duty to be matched. You need a saved location first.
-            {% endif %}
+            {% if profile.on_duty %}You can be matched to nearby emergency requests.{% else %}Switch on duty to be matched. You need a saved location first.{% endif %}
           </p>
           <form method="post" action="{{ url_for('guardian.duty') }}" class="mt-auto">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -88,10 +169,30 @@
     </div>
 
     <div class="col-12">
-      <div class="card card-soft info-card">
-        <div class="card-body p-4">
-          <h2 class="h6 mb-1"><i class="bi bi-inbox me-2"></i>Incoming requests</h2>
-          <p class="small mb-0">Requests matched to you will appear here with Accept and Reject buttons (added in the next phase).</p>
+      <div class="card card-soft">
+        <div class="card-header bg-transparent border-0 pt-4 px-4">
+          <h2 class="h5 mb-0"><i class="bi bi-clock-history me-2 text-rose"></i>My recent responses</h2>
+        </div>
+        <div class="card-body px-4 pb-4">
+          {% if data.history %}
+            <div class="table-responsive">
+              <table class="table table-borderless align-middle table-soft mb-0">
+                <thead><tr><th>Request</th><th>My response</th><th>When</th><th>Request status</th></tr></thead>
+                <tbody>
+                  {% for h in data.history %}
+                  <tr>
+                    <td class="fw-semibold">#{{ h.request_id }}</td>
+                    <td>{{ status_badge(h.action) }}</td>
+                    <td>{{ h.responded_at | ist }}</td>
+                    <td>{{ status_badge(h.request.status) }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <p class="text-muted mb-0">You have not responded to any request yet.</p>
+          {% endif %}
         </div>
       </div>
     </div>

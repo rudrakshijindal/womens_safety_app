@@ -172,6 +172,24 @@ a:hover { color: var(--burgundy); }
 .duty-dot { width: 14px; height: 14px; border-radius: 50%; background: #b9a6ae; display: inline-block; }
 .duty-dot.on { background: #1f9d5c; box-shadow: 0 0 0 6px rgba(31, 157, 92, 0.18); }
 
+/* ---------- active request + role pills ---------- */
+.active-card { border-left: 6px solid var(--rose); background: linear-gradient(90deg, #fff, #fff6f9); }
+.role-pill { display: inline-block; padding: 0.15rem 0.65rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; text-transform: capitalize; background: #ececec; color: #444; }
+.role-admin { background: #f3d9e2; color: var(--burgundy); }
+.role-guardian { background: #dcf5e6; color: #146c3c; }
+.role-user { background: #dbeafe; color: #1e4fa3; }
+
+/* ---------- simple bar chart ---------- */
+.bar-row { display: grid; grid-template-columns: 90px 1fr 36px; align-items: center; gap: 0.75rem; margin-bottom: 0.9rem; }
+.bar-label { font-size: 0.88rem; color: var(--muted); }
+.bar-track { background: #f6e8ed; border-radius: 999px; height: 14px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 999px; min-width: 4px; transition: width 0.4s ease; }
+.bar-pending { background: #e0a100; }
+.bar-accepted { background: #1f9d5c; }
+.bar-resolved { background: #2f6fd1; }
+.bar-cancelled { background: #9a9a9a; }
+.bar-count { font-weight: 700; text-align: right; color: var(--burgundy-dark); }
+
 /* ---------- status badges ---------- */
 .status-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.78rem; font-weight: 600; }
 .status-pending { background: #fff1cc; color: #8a5a00; }

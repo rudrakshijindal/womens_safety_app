@@ -6,7 +6,7 @@
 <div class="container py-4 py-md-5">
   <div class="page-head mb-4">
     <h1 class="section-title mb-1">Admin dashboard</h1>
-    <p class="text-muted mb-0">Live counts from the database.</p>
+    <p class="text-muted mb-0">Live numbers calculated from the database.</p>
   </div>
 
   <div class="row g-4">
@@ -17,32 +17,55 @@
   </div>
 
   <div class="row g-4 mt-1">
-    <div class="col-md-6">
-      <a class="card card-soft feature-card text-decoration-none h-100" href="{{ url_for('admin.applications') }}">
-        <div class="card-body p-4 d-flex align-items-center gap-3">
-          <div class="feature-icon"><i class="bi bi-clipboard-check"></i></div>
-          <div>
-            <div class="fw-semibold text-dark">Review guardian applications</div>
-            <div class="small text-muted">
-              {% if stats.pending_guardians %}{{ stats.pending_guardians }} waiting for a decision{% else %}No applications waiting{% endif %}
+    <div class="col-lg-7">
+      <div class="card card-soft h-100">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-baseline mb-3">
+            <h2 class="h5 mb-0"><i class="bi bi-bar-chart-fill me-2 text-rose"></i>Emergency requests by status</h2>
+            <span class="text-muted small">{{ stats.requests }} total</span>
+          </div>
+          {% set top = [stats.by_status.values() | max, 1] | max %}
+          {% for key, label in [('pending', 'Pending'), ('accepted', 'Accepted'), ('resolved', 'Resolved'), ('cancelled', 'Cancelled')] %}
+            {% set n = stats.by_status[key] %}
+            <div class="bar-row">
+              <div class="bar-label">{{ label }}</div>
+              <div class="bar-track" role="img" aria-label="{{ label }}: {{ n }}">
+                <div class="bar-fill bar-{{ key }}" style="width: {{ (n / top * 100) | round(0) }}%"></div>
+              </div>
+              <div class="bar-count">{{ n }}</div>
             </div>
-          </div>
-          <i class="bi bi-chevron-right ms-auto text-muted"></i>
+          {% endfor %}
+          {% if not stats.requests %}
+            <p class="small text-muted mt-3 mb-0">No requests yet. Create a demo emergency on the Requests page.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="row g-4">
+        <div class="col-12">{{ stat_card('stopwatch', 'Avg. time to accept (min)', stats.avg_accept_min if stats.avg_accept_min is not none else '-', 'amber') }}</div>
+        <div class="col-12">{{ stat_card('check2-all', 'Avg. time to resolve (min)', stats.avg_resolve_min if stats.avg_resolve_min is not none else '-', 'green') }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mt-1">
+    {% for endpoint, icon, title, text in [
+      ('admin.applications', 'clipboard-check', 'Guardian applications', (stats.pending_guardians ~ ' waiting for a decision') if stats.pending_guardians else 'No applications waiting'),
+      ('admin.guardians', 'shield-check', 'All guardians', 'Status, duty and location type'),
+      ('admin.requests', 'exclamation-triangle', 'Emergency requests', 'Create a demo emergency and follow it'),
+      ('admin.users', 'people', 'Users', 'Everyone registered on the site')
+    ] %}
+    <div class="col-md-6 col-xl-3">
+      <a class="card card-soft feature-card text-decoration-none h-100" href="{{ url_for(endpoint) }}">
+        <div class="card-body p-4">
+          <div class="feature-icon"><i class="bi bi-{{ icon }}"></i></div>
+          <div class="fw-semibold text-dark mt-3">{{ title }}</div>
+          <div class="small text-muted">{{ text }}</div>
         </div>
       </a>
     </div>
-    <div class="col-md-6">
-      <a class="card card-soft feature-card text-decoration-none h-100" href="{{ url_for('admin.guardians') }}">
-        <div class="card-body p-4 d-flex align-items-center gap-3">
-          <div class="feature-icon"><i class="bi bi-shield-check"></i></div>
-          <div>
-            <div class="fw-semibold text-dark">All guardians</div>
-            <div class="small text-muted">Status, duty and location type</div>
-          </div>
-          <i class="bi bi-chevron-right ms-auto text-muted"></i>
-        </div>
-      </a>
-    </div>
+    {% endfor %}
   </div>
 </div>
 {% endblock %}

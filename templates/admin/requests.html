@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}Emergency requests{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-md-5">
+  <div class="page-head mb-4">
+    <h1 class="section-title mb-1">Emergency requests</h1>
+    <p class="text-muted mb-0">Follow every request from creation to resolution.</p>
+  </div>
+
+  <div class="card card-soft info-card mb-4">
+    <div class="card-body p-4">
+      <h2 class="h6"><i class="bi bi-lightning-charge-fill me-2"></i>Create a demo emergency</h2>
+      <p class="small mb-3">
+        This simulates the SOS button (built by another team member) so this part can be demonstrated on its own.
+        It creates a request at a simulated location, matches the nearest approved guardians who are on duty,
+        and sends in-app notifications. No SMS or call is made.
+      </p>
+      {% if users %}
+      <form method="post" action="{{ url_for('admin.demo_emergency') }}" class="row g-2 align-items-end">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="col-md-4">
+          <label for="user_id" class="form-label small mb-1">Requester</label>
+          <select class="form-select" id="user_id" name="user_id" required>
+            {% for u in users %}<option value="{{ u.id }}">{{ u.name }} ({{ u.email }})</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label for="preset" class="form-label small mb-1">Simulated location</label>
+          <select class="form-select" id="preset" name="preset" required>
+            {% for key, item in presets.items() %}<option value="{{ key }}">{{ item[0] }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <button class="btn btn-rose w-100"><i class="bi bi-lightning-charge me-1"></i>Create demo emergency</button>
+        </div>
+      </form>
+      {% else %}
+        <p class="small mb-0">There is no registered user yet. Register a user account first, then come back.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card card-soft">
+    <div class="card-body px-4 py-4">
+      {% if requests %}
+        <div class="table-responsive">
+          <table class="table table-borderless align-middle table-soft mb-0">
+            <thead>
+              <tr><th>#</th><th>Requester</th><th>Created</th><th>Status</th><th>Matched guardians (nearest first)</th><th>Accepted by</th></tr>
+            </thead>
+            <tbody>
+              {% for r in requests %}
+              <tr>
+                <td class="fw-semibold">{{ r.id }}</td>
+                <td>{{ r.user.name }}{% if r.location_is_simulated %} <span class="small text-muted">(simulated)</span>{% endif %}</td>
+                <td class="small">{{ r.created_at | ist }}</td>
+                <td>{{ status_badge(r.status) }}</td>
+                <td class="small">
+                  {% for m in r.matches | sort(attribute='distance_km') %}
+                    <div>{{ m.guardian.name }} - {{ m.distance_km }} km</div>
+                  {% else %}-{% endfor %}
+                </td>
+                <td class="small">
+                  {% if r.accepted_by %}{{ r.accepted_by.name }}<div class="text-muted">{{ r.accepted_at | ist }}</div>{% else %}-{% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state"><i class="bi bi-inbox"></i><p class="mb-0">No emergency requests yet.</p></div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

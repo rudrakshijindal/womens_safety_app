@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_user
 
 from models import User
@@ -47,6 +47,7 @@ def dashboard():
         "guardian/dashboard.html",
         profile=current_user.guardian_profile,
         presets=guardian_service.PRESET_LOCATIONS,
+        data=guardian_service.dashboard_data(current_user.id),
     )
 
 
@@ -82,4 +83,34 @@ def location():
 def duty():
     ok, message = guardian_service.toggle_duty(current_user.guardian_profile)
     flash(message, "success" if ok else "warning")
+    return redirect(url_for("guardian.dashboard"))
+
+
+@bp.post("/requests/<int:request_id>/respond")
+@approved_guardian_required
+def respond(request_id):
+    action = request.form.get("action")
+    result = guardian_service.respond(request_id, current_user.id, action)
+
+    if result == "invalid":
+        abort(400)
+    if result == "forbidden":
+        abort(403)
+    if result == "already_responded":
+        flash("You already responded to this request.", "warning")
+    elif result == "closed":
+        flash("This request is no longer open. Another guardian may have accepted it.", "warning")
+    elif action == "accept":
+        flash("You accepted the request. The requester was notified in-app (demo status).", "success")
+    else:
+        flash("You declined the request.", "info")
+    return redirect(url_for("guardian.dashboard"))
+
+
+@bp.post("/requests/<int:request_id>/resolve")
+@approved_guardian_required
+def resolve(request_id):
+    if guardian_service.resolve(request_id, current_user.id) != "ok":
+        abort(403)
+    flash("Request marked as resolved.", "success")
     return redirect(url_for("guardian.dashboard"))

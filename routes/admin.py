@@ -1,7 +1,8 @@
-from flask import Blueprint, flash, redirect, render_template, url_for
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 from services import admin_service
 from services.auth import role_required
+from services.guardian_service import PRESET_LOCATIONS
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -37,3 +38,38 @@ def decide(profile_id, decision):
 @role_required("admin")
 def guardians():
     return render_template("admin/guardians.html", profiles=admin_service.all_guardians())
+
+
+@bp.get("/users")
+@role_required("admin")
+def users():
+    return render_template("admin/users.html", users=admin_service.all_users())
+
+
+@bp.get("/requests")
+@role_required("admin")
+def requests():
+    return render_template(
+        "admin/requests.html",
+        requests=admin_service.all_requests(),
+        users=[u for u in admin_service.all_users() if u.role == "user"],
+        presets=PRESET_LOCATIONS,
+    )
+
+
+@bp.post("/demo-emergency")
+@role_required("admin")
+def demo_emergency():
+    try:
+        user_id = int(request.form.get("user_id", ""))
+    except ValueError:
+        user_id = 0
+    req, matches = admin_service.create_demo_request(user_id, request.form.get("preset", ""))
+    if req is None:
+        flash("Choose a user and a location to create the demo emergency.", "danger")
+    elif matches:
+        names = ", ".join(f"{m['name']} ({m['distance_km']} km)" for m in matches)
+        flash(f"Demo emergency #{req.id} created. Matched nearest first: {names}.", "success")
+    else:
+        flash(f"Demo emergency #{req.id} created, but no guardian is on duty nearby.", "warning")
+    return redirect(url_for("admin.requests"))
