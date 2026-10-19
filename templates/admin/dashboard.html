@@ -12,14 +12,36 @@
   <div class="row g-4">
     <div class="col-sm-6 col-lg-3">{{ stat_card('people-fill', 'Registered users', stats.users, 'rose') }}</div>
     <div class="col-sm-6 col-lg-3">{{ stat_card('patch-check-fill', 'Approved guardians', stats.approved_guardians, 'green') }}</div>
-    <div class="col-sm-6 col-lg-3">{{ stat_card('hourglass-split', 'Pending guardians', stats.pending_guardians, 'amber') }}</div>
-    <div class="col-sm-6 col-lg-3">{{ stat_card('exclamation-triangle-fill', 'Emergency requests', stats.requests, 'burgundy') }}</div>
+    <div class="col-sm-6 col-lg-3">{{ stat_card('hourglass-split', 'Pending applications', stats.pending_guardians, 'amber') }}</div>
+    <div class="col-sm-6 col-lg-3">{{ stat_card('broadcast', 'Guardians on duty', stats.on_duty_guardians, 'burgundy') }}</div>
   </div>
 
-  <div class="card card-soft info-card mt-4">
-    <div class="card-body p-4">
-      <h2 class="h6 mb-1"><i class="bi bi-info-circle me-2"></i>Coming next</h2>
-      <p class="small mb-0">Guardian applications, the guardian list, users and emergency requests are added in the next phases.</p>
+  <div class="row g-4 mt-1">
+    <div class="col-md-6">
+      <a class="card card-soft feature-card text-decoration-none h-100" href="{{ url_for('admin.applications') }}">
+        <div class="card-body p-4 d-flex align-items-center gap-3">
+          <div class="feature-icon"><i class="bi bi-clipboard-check"></i></div>
+          <div>
+            <div class="fw-semibold text-dark">Review guardian applications</div>
+            <div class="small text-muted">
+              {% if stats.pending_guardians %}{{ stats.pending_guardians }} waiting for a decision{% else %}No applications waiting{% endif %}
+            </div>
+          </div>
+          <i class="bi bi-chevron-right ms-auto text-muted"></i>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-6">
+      <a class="card card-soft feature-card text-decoration-none h-100" href="{{ url_for('admin.guardians') }}">
+        <div class="card-body p-4 d-flex align-items-center gap-3">
+          <div class="feature-icon"><i class="bi bi-shield-check"></i></div>
+          <div>
+            <div class="fw-semibold text-dark">All guardians</div>
+            <div class="small text-muted">Status, duty and location type</div>
+          </div>
+          <i class="bi bi-chevron-right ms-auto text-muted"></i>
+        </div>
+      </a>
     </div>
   </div>
 </div>

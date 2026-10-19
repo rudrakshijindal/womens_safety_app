@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Become a guardian{% endblock %}
+
+{% block content %}
+<div class="container auth-wrap">
+  <div class="row justify-content-center">
+    <div class="col-md-10 col-lg-7">
+      <div class="card card-soft auth-card">
+        <div class="card-body p-4 p-md-5">
+          <div class="text-center mb-4">
+            <div class="feature-icon mx-auto"><i class="bi bi-shield-plus"></i></div>
+            <h1 class="h3 mt-3 mb-1">Apply as a guardian</h1>
+            <p class="text-muted mb-0">An admin reviews every application before you can respond to requests.</p>
+          </div>
+
+          <form method="post" action="{{ url_for('guardian.register') }}" novalidate>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="name" class="form-label">Full name</label>
+                <input type="text" class="form-control" id="name" name="name" value="{{ form.get('name', '') }}" autocomplete="name" required autofocus>
+              </div>
+              <div class="col-md-6">
+                <label for="phone" class="form-label">Mobile number</label>
+                <input type="tel" class="form-control" id="phone" name="phone" value="{{ form.get('phone', '') }}" inputmode="numeric" maxlength="10" placeholder="10-digit Indian number" required>
+              </div>
+              <div class="col-12">
+                <label for="email" class="form-label">Email address</label>
+                <input type="email" class="form-control" id="email" name="email" value="{{ form.get('email', '') }}" autocomplete="email" required>
+              </div>
+              <div class="col-12">
+                <label for="organisation" class="form-label">Organisation, college or NGO</label>
+                <input type="text" class="form-control" id="organisation" name="organisation" value="{{ form.get('organisation', '') }}" required>
+              </div>
+              <div class="col-12">
+                <label for="id_proof_note" class="form-label">ID proof note</label>
+                <input type="text" class="form-control" id="id_proof_note" name="id_proof_note" value="{{ form.get('id_proof_note', '') }}" maxlength="255" placeholder="e.g. Aadhaar, last 4 digits 1234" required>
+                <div class="form-text">Type the ID name and the <strong>last 4 digits only</strong>. Do not enter a full ID number. No documents are uploaded in this prototype.</div>
+              </div>
+              <div class="col-12">
+                <label for="reason" class="form-label">Why do you want to be a guardian? <span class="text-muted fw-normal">(optional)</span></label>
+                <textarea class="form-control" id="reason" name="reason" rows="3" maxlength="500">{{ form.get('reason', '') }}</textarea>
+              </div>
+              <div class="col-md-6">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" autocomplete="new-password" minlength="8" required>
+              </div>
+              <div class="col-md-6">
+                <label for="confirm_password" class="form-label">Confirm password</label>
+                <input type="password" class="form-control" id="confirm_password" name="confirm_password" autocomplete="new-password" required>
+              </div>
+              <div class="col-12">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="agree" name="agree" {% if form.get('agree') %}checked{% endif %}>
+                  <label class="form-check-label small" for="agree">
+                    I understand this is an academic prototype, my details will be reviewed by an administrator,
+                    and approval does not make me an official emergency responder.
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <button class="btn btn-rose btn-lg w-100 mt-4" type="submit">Submit application</button>
+          </form>
+
+          <p class="text-center text-muted mt-4 mb-0">
+            Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

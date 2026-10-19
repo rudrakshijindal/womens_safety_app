@@ -165,6 +165,13 @@ a:hover { color: var(--burgundy); }
 .empty-state { text-align: center; color: var(--muted); padding: 2rem 1rem; }
 .empty-state i { font-size: 2.4rem; color: #e2b9c6; display: block; margin-bottom: 0.5rem; }
 
+/* ---------- duty card ---------- */
+.duty-card { border-left: 6px solid #cdbac2; }
+.duty-card.is-on { border-left-color: #1f9d5c; }
+.duty-state { display: flex; align-items: center; gap: 0.7rem; }
+.duty-dot { width: 14px; height: 14px; border-radius: 50%; background: #b9a6ae; display: inline-block; }
+.duty-dot.on { background: #1f9d5c; box-shadow: 0 0 0 6px rgba(31, 157, 92, 0.18); }
+
 /* ---------- status badges ---------- */
 .status-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.78rem; font-weight: 600; }
 .status-pending { background: #fff1cc; color: #8a5a00; }

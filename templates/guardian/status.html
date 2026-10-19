@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}My application{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-md-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <div class="card card-soft">
+        <div class="card-body p-4 p-md-5">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h1 class="h3 mb-0">My guardian application</h1>
+            {{ status_badge(profile.status) }}
+          </div>
+
+          {% if profile.status == 'pending' %}
+            <div class="alert alert-warning mb-4">
+              <strong>Waiting for admin review.</strong> You will get a notification when a decision is made. Until then you cannot go on duty or see requests.
+            </div>
+          {% elif profile.status == 'approved' %}
+            <div class="alert alert-success mb-4">
+              <strong>Approved by admin</strong> on {{ profile.approved_at | ist }}. You can now set your location and go on duty.
+            </div>
+            <a class="btn btn-rose mb-4" href="{{ url_for('guardian.dashboard') }}"><i class="bi bi-speedometer2 me-2"></i>Open guardian dashboard</a>
+          {% else %}
+            <div class="alert alert-danger mb-4">
+              <strong>Not approved.</strong> The admin did not approve this application.
+            </div>
+          {% endif %}
+
+          <dl class="row mb-0">
+            <dt class="col-sm-4 text-muted fw-normal">Name</dt><dd class="col-sm-8">{{ current_user.name }}</dd>
+            <dt class="col-sm-4 text-muted fw-normal">Organisation</dt><dd class="col-sm-8">{{ profile.organisation }}</dd>
+            <dt class="col-sm-4 text-muted fw-normal">ID proof note</dt><dd class="col-sm-8">{{ profile.id_proof_note }}</dd>
+            <dt class="col-sm-4 text-muted fw-normal">Applied</dt><dd class="col-sm-8 mb-0">{{ profile.created_at | ist }}</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

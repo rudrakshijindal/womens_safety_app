@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}All guardians{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-md-5">
+  <div class="page-head mb-4">
+    <h1 class="section-title mb-1">All guardians</h1>
+    <p class="text-muted mb-0">Exact locations are not shown here, only whether a location is saved.</p>
+  </div>
+
+  <div class="card card-soft">
+    <div class="card-body px-4 py-4">
+      {% if profiles %}
+        <div class="table-responsive">
+          <table class="table table-borderless align-middle table-soft mb-0">
+            <thead>
+              <tr><th>Guardian</th><th>Organisation</th><th>Status</th><th>Duty</th><th>Location</th></tr>
+            </thead>
+            <tbody>
+              {% for p in profiles %}
+              <tr>
+                <td>
+                  <div class="fw-semibold">{{ p.user.name }}</div>
+                  <div class="small text-muted">{{ p.user.email }}</div>
+                </td>
+                <td>{{ p.organisation }}</td>
+                <td>{{ status_badge(p.status) }}</td>
+                <td>
+                  {% if p.on_duty %}<span class="status-badge status-approved">On duty</span>
+                  {% else %}<span class="status-badge status-cancelled">Off duty</span>{% endif %}
+                </td>
+                <td class="small">
+                  {% if p.latitude is not none %}
+                    {{ 'Simulated' if p.location_is_simulated else 'From device' }}
+                  {% else %}Not set{% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state"><i class="bi bi-people"></i><p class="mb-0">No guardians have applied yet.</p></div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

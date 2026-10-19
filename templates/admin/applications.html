@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}Guardian applications{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-md-5">
+  <div class="page-head mb-4">
+    <h1 class="section-title mb-1">Guardian applications</h1>
+    <p class="text-muted mb-0">Review the details and decide. Approval means you reviewed what was submitted. This prototype does not upload or verify ID documents.</p>
+  </div>
+
+  <div class="card card-soft mb-4">
+    <div class="card-header bg-transparent border-0 pt-4 px-4">
+      <h2 class="h5 mb-0"><i class="bi bi-hourglass-split me-2 text-rose"></i>Waiting for a decision ({{ pending|length }})</h2>
+    </div>
+    <div class="card-body px-4 pb-4">
+      {% if pending %}
+        <div class="table-responsive">
+          <table class="table table-borderless align-middle table-soft mb-0">
+            <thead>
+              <tr><th>Applicant</th><th>Organisation</th><th>ID proof note</th><th>Reason</th><th>Applied</th><th class="text-end">Decision</th></tr>
+            </thead>
+            <tbody>
+              {% for p in pending %}
+              <tr>
+                <td>
+                  <div class="fw-semibold">{{ p.user.name }}</div>
+                  <div class="small text-muted">{{ p.user.email }}</div>
+                  <div class="small text-muted">{{ p.user.phone }}</div>
+                </td>
+                <td>{{ p.organisation }}</td>
+                <td class="small">{{ p.id_proof_note }}</td>
+                <td class="small">{{ p.reason or '-' }}</td>
+                <td class="small">{{ p.created_at | ist }}</td>
+                <td class="text-end text-nowrap">
+                  <form method="post" action="{{ url_for('admin.decide', profile_id=p.id, decision='approve') }}" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn-sm btn-success"><i class="bi bi-check-lg me-1"></i>Approve</button>
+                  </form>
+                  <form method="post" action="{{ url_for('admin.decide', profile_id=p.id, decision='reject') }}" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-x-lg me-1"></i>Reject</button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <i class="bi bi-check2-circle"></i>
+          <p class="mb-0">No applications are waiting.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card card-soft">
+    <div class="card-header bg-transparent border-0 pt-4 px-4">
+      <h2 class="h5 mb-0"><i class="bi bi-clock-history me-2 text-rose"></i>Recent decisions</h2>
+    </div>
+    <div class="card-body px-4 pb-4">
+      {% if decided %}
+        <div class="table-responsive">
+          <table class="table table-borderless align-middle table-soft mb-0">
+            <thead><tr><th>Guardian</th><th>Organisation</th><th>Decision</th><th>Decided</th></tr></thead>
+            <tbody>
+              {% for p in decided %}
+              <tr>
+                <td class="fw-semibold">{{ p.user.name }}</td>
+                <td>{{ p.organisation }}</td>
+                <td>{{ status_badge(p.status) }}</td>
+                <td class="small">{{ (p.approved_at | ist) if p.approved_at else '-' }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="text-muted mb-0">No decisions yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

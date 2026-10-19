@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}Guardian dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-md-5">
+  <div class="page-head mb-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
+    <div>
+      <h1 class="section-title mb-1">Guardian dashboard</h1>
+      <p class="text-muted mb-0">{{ current_user.name }}{% if profile.organisation %} - {{ profile.organisation }}{% endif %}</p>
+    </div>
+    {{ status_badge(profile.status) }}
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-5">
+      <div class="card card-soft h-100 duty-card {% if profile.on_duty %}is-on{% endif %}">
+        <div class="card-body p-4 d-flex flex-column">
+          <h2 class="h5"><i class="bi bi-broadcast me-2 text-rose"></i>Duty status</h2>
+          <div class="duty-state my-3">
+            {% if profile.on_duty %}
+              <span class="duty-dot on"></span><span class="fs-4 fw-semibold">ON duty</span>
+            {% else %}
+              <span class="duty-dot"></span><span class="fs-4 fw-semibold text-muted">OFF duty</span>
+            {% endif %}
+          </div>
+          <p class="small text-muted">
+            {% if profile.on_duty %}
+              You can be matched to nearby emergency requests.
+            {% else %}
+              Switch on duty to be matched. You need a saved location first.
+            {% endif %}
+          </p>
+          <form method="post" action="{{ url_for('guardian.duty') }}" class="mt-auto">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {% if profile.on_duty %}
+              <button class="btn btn-outline-secondary btn-lg w-100"><i class="bi bi-pause-circle me-2"></i>Go off duty</button>
+            {% else %}
+              <button class="btn btn-rose btn-lg w-100"><i class="bi bi-play-circle me-2"></i>Go on duty</button>
+            {% endif %}
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-7">
+      <div class="card card-soft h-100">
+        <div class="card-body p-4">
+          <h2 class="h5"><i class="bi bi-geo-alt-fill me-2 text-rose"></i>My location</h2>
+
+          {% if profile.latitude is not none %}
+            <p class="mb-3">
+              <span class="status-badge {{ 'status-pending' if profile.location_is_simulated else 'status-approved' }}">
+                {{ 'Simulated location' if profile.location_is_simulated else 'Device location' }}
+              </span>
+              <span class="small text-muted ms-2">{{ '%.4f' | format(profile.latitude) }}, {{ '%.4f' | format(profile.longitude) }}</span>
+            </p>
+          {% else %}
+            <p class="text-muted">No location saved yet.</p>
+          {% endif %}
+
+          <form method="post" action="{{ url_for('guardian.location') }}" id="locationForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="source" id="source" value="manual">
+
+            <label for="preset" class="form-label">Choose an area (demo)</label>
+            <select class="form-select mb-3" id="preset" name="preset">
+              <option value="">Choose an area...</option>
+              {% for key, item in presets.items() %}
+                <option value="{{ key }}">{{ item[0] }}</option>
+              {% endfor %}
+            </select>
+
+            <div class="text-center small text-muted mb-3">or enter coordinates</div>
+            <div class="row g-2 mb-3">
+              <div class="col-6"><input type="text" class="form-control" id="latitude" name="latitude" placeholder="Latitude" inputmode="decimal"></div>
+              <div class="col-6"><input type="text" class="form-control" id="longitude" name="longitude" placeholder="Longitude" inputmode="decimal"></div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2">
+              <button class="btn btn-burgundy" type="submit"><i class="bi bi-check2 me-1"></i>Save location</button>
+              <button class="btn btn-outline-secondary" type="button" id="useMyLocation"><i class="bi bi-crosshair me-1"></i>Use my current location</button>
+            </div>
+            <div class="form-text mt-2" id="geoMessage">Your location is saved only when you press Save. It is not tracked in the background.</div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="card card-soft info-card">
+        <div class="card-body p-4">
+          <h2 class="h6 mb-1"><i class="bi bi-inbox me-2"></i>Incoming requests</h2>
+          <p class="small mb-0">Requests matched to you will appear here with Accept and Reject buttons (added in the next phase).</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () {
+    var btn = document.getElementById("useMyLocation");
+    var msg = document.getElementById("geoMessage");
+    var lat = document.getElementById("latitude");
+    var lng = document.getElementById("longitude");
+    var source = document.getElementById("source");
+    var preset = document.getElementById("preset");
+
+    btn.addEventListener("click", function () {
+      if (!navigator.geolocation) { msg.textContent = "Your browser does not support location."; return; }
+      msg.textContent = "Asking your browser for permission...";
+      navigator.geolocation.getCurrentPosition(function (pos) {
+        lat.value = pos.coords.latitude.toFixed(6);
+        lng.value = pos.coords.longitude.toFixed(6);
+        preset.value = "";
+        source.value = "device";
+        msg.textContent = "Location filled in. Press Save location to keep it.";
+      }, function () {
+        msg.textContent = "Permission was denied or location is unavailable. Choose an area instead.";
+      });
+    });
+
+    [lat, lng].forEach(function (el) { el.addEventListener("input", function () { source.value = "manual"; }); });
+  })();
+</script>
+{% endblock %}

@@ -1,6 +1,6 @@
 from functools import wraps
 
-from flask import abort, url_for
+from flask import abort, flash, redirect, url_for
 from flask_login import current_user
 
 from extensions import login_manager
@@ -27,8 +27,31 @@ def role_required(role):
     return decorator
 
 
+def approved_guardian_required(fn):
+    """Guardian role AND approved by an admin.
+
+    A pending or rejected guardian is sent to their status page instead.
+    """
+
+    @role_required("guardian")
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        profile = current_user.guardian_profile
+        if profile is None or profile.status != "approved":
+            flash("Your guardian account is not approved yet, so that page is locked.", "warning")
+            return redirect(url_for("guardian.status"))
+        return fn(*args, **kwargs)
+
+    return wrapper
+
+
 def home_for(user):
-    """Where each role lands after login. Guardian is added in Phase 3."""
+    """Where each role lands after login."""
     if user.role == "admin":
         return url_for("admin.dashboard")
+    if user.role == "guardian":
+        profile = user.guardian_profile
+        if profile is not None and profile.status == "approved":
+            return url_for("guardian.dashboard")
+        return url_for("guardian.status")
     return url_for("main.dashboard")

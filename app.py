@@ -37,9 +37,10 @@ def create_app(config_object=Config):
     # ---- blueprints ----
     from routes.admin import bp as admin_bp
     from routes.auth import bp as auth_bp
+    from routes.guardian import bp as guardian_bp
     from routes.main import bp as main_bp
 
-    for blueprint in (main_bp, auth_bp, admin_bp):
+    for blueprint in (main_bp, auth_bp, guardian_bp, admin_bp):
         app.register_blueprint(blueprint)
 
     # ---- template helpers ----
@@ -94,6 +95,27 @@ def create_app(config_object=Config):
         """Create all database tables."""
         db.create_all()
         click.echo("Database tables created.")
+
+    @app.cli.command("create-admin")
+    @click.option("--name", prompt="Admin name")
+    @click.option("--email", prompt="Admin email")
+    @click.password_option(prompt="Password")
+    def create_admin(name, email, password):
+        """Create an admin account. Admins can only be created here (or by the seed script)."""
+        from services.validators import EMAIL_RE
+
+        email = email.strip().lower()
+        if not EMAIL_RE.match(email):
+            raise click.ClickException("That email address is not valid.")
+        if len(password) < 8:
+            raise click.ClickException("Password must be at least 8 characters.")
+        if User.query.filter_by(email=email).first():
+            raise click.ClickException("An account with that email already exists.")
+        admin = User(name=name.strip(), email=email, role="admin")
+        admin.set_password(password)
+        db.session.add(admin)
+        db.session.commit()
+        click.echo(f"Admin account created for {email}.")
 
     return app
 
