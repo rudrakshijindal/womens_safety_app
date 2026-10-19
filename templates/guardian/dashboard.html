@@ -61,31 +61,27 @@
     </div>
     <div class="card-body px-4 pb-4">
       {% if data.incoming %}
-        <div class="table-responsive">
-          <table class="table table-borderless align-middle table-soft mb-0">
-            <thead><tr><th>Request</th><th>Distance from you</th><th>Received</th><th class="text-end">Your response</th></tr></thead>
-            <tbody>
-              {% for m in data.incoming %}
-              <tr>
-                <td class="fw-semibold">#{{ m.request_id }}</td>
-                <td>about {{ m.distance_km }} km</td>
-                <td>{{ m.request.created_at | ago }}</td>
-                <td class="text-end text-nowrap">
-                  <form method="post" action="{{ url_for('guardian.respond', request_id=m.request_id) }}" class="d-inline">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <input type="hidden" name="action" value="accept">
-                    <button class="btn btn-sm btn-rose px-3">Accept</button>
-                  </form>
-                  <form method="post" action="{{ url_for('guardian.respond', request_id=m.request_id) }}" class="d-inline">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <input type="hidden" name="action" value="reject">
-                    <button class="btn btn-sm btn-outline-secondary px-3">Reject</button>
-                  </form>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+        <div class="request-list">
+          {% for m in data.incoming %}
+          <div class="request-row">
+            <div>
+              <div class="fw-semibold">Request #{{ m.request_id }}</div>
+              <div class="small text-muted">about {{ m.distance_km }} km from you &middot; {{ m.request.created_at | ago }}</div>
+            </div>
+            <div class="d-flex gap-2">
+              <form method="post" action="{{ url_for('guardian.respond', request_id=m.request_id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="accept">
+                <button class="btn btn-rose px-4">Accept</button>
+              </form>
+              <form method="post" action="{{ url_for('guardian.respond', request_id=m.request_id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="reject">
+                <button class="btn btn-outline-secondary px-4">Reject</button>
+              </form>
+            </div>
+          </div>
+          {% endfor %}
         </div>
         <p class="small text-muted mt-3 mb-0">The requester's details are shown only after you accept. Alerts are in-app demo records.</p>
       {% else %}

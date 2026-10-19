@@ -172,6 +172,15 @@ a:hover { color: var(--burgundy); }
 .duty-dot { width: 14px; height: 14px; border-radius: 50%; background: #b9a6ae; display: inline-block; }
 .duty-dot.on { background: #1f9d5c; box-shadow: 0 0 0 6px rgba(31, 157, 92, 0.18); }
 
+/* ---------- incoming request rows (stack nicely on phones) ---------- */
+.request-row {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem;
+  padding: 0.9rem 0; border-bottom: 1px solid var(--line);
+}
+.request-row:last-child { border-bottom: 0; }
+/* wide tables scroll sideways inside their card instead of squeezing the text */
+.table-responsive > .table-soft { min-width: 640px; }
+
 /* ---------- active request + role pills ---------- */
 .active-card { border-left: 6px solid var(--rose); background: linear-gradient(90deg, #fff, #fff6f9); }
 .role-pill { display: inline-block; padding: 0.15rem 0.65rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; text-transform: capitalize; background: #ececec; color: #444; }
