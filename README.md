@@ -14,6 +14,7 @@ In an emergency call **112**.
 | Matching | Approved + on-duty guardians ranked by distance with the Haversine formula. Only approximate distance is shown |
 | Requests | Guardian accepts or rejects, only one guardian can accept, the accepting guardian marks it resolved |
 | Admin | Live analytics, applications, guardians, users, requests, and a demo-emergency tool |
+| Live updates | Dashboards, bell and request tracker refresh by themselves every ~4 s (polling), with a toast for new notifications |
 | Data | Seed script that creates a demo admin, users and sample guardians |
 
 ## What it does NOT do (be honest about this)
@@ -23,7 +24,7 @@ In an emergency call **112**.
 - It does not track location in the background. A location is saved only when the guardian presses Save.
 - Sample guardians are simulated people with simulated locations.
 - "Approved by admin" means an administrator reviewed the submitted details. No documents are uploaded or verified.
-- The SOS button itself belongs to another team member. The admin "Create demo emergency" tool stands in for it.
+- The SOS button itself belongs to another team member. The "Try a demo emergency" card on the user dashboard (`routes/demo.py`) and the admin "Create demo emergency" tool stand in for it.
 
 ## Setup (Windows, PowerShell)
 

@@ -1,7 +1,7 @@
 from math import asin, cos, radians, sin, sqrt
 
 from extensions import db
-from models import GuardianProfile, RequestMatch
+from models import EmergencyRequest, GuardianProfile, RequestMatch
 from services.notifications import notify
 
 
@@ -74,3 +74,34 @@ def dispatch_to_guardians(emergency_request, matches):
         )
     db.session.commit()
     return len(matches)
+
+
+def match_open_requests(profile, limit=5):
+    """Match a guardian who has just become available to requests that are still pending.
+
+    A request is matched once, when it is created, so a guardian who goes on duty (or moves)
+    afterwards would miss it. Called when a guardian goes on duty or changes location.
+    A request keeps at most `limit` matched guardians. Returns how many requests were added.
+    """
+    if profile.status != "approved" or not profile.on_duty or profile.latitude is None:
+        return 0
+
+    added = 0
+    for req in EmergencyRequest.query.filter_by(status="pending").all():
+        if req.user_id == profile.user_id:
+            continue
+        already = {m.guardian_id for m in req.matches}
+        if profile.user_id in already or len(already) >= limit:
+            continue
+        km = round(haversine_km(profile.latitude, profile.longitude, req.latitude, req.longitude), 1)
+        db.session.add(RequestMatch(request_id=req.id, guardian_id=profile.user_id, distance_km=km))
+        notify(
+            profile.user_id,
+            "emergency_request",
+            f"Open emergency request about {km} km from you (in-app demo alert).",
+            "/guardian/dashboard",
+            commit=False,
+        )
+        added += 1
+    db.session.commit()
+    return added

@@ -15,8 +15,25 @@
     </div>
   </div>
 
+  {# ---------- readiness: why requests may not be arriving ---------- #}
+  <div data-live="g-ready">
+  {% if not profile.on_duty or profile.latitude is none %}
+    <div class="alert alert-warning d-flex gap-3 align-items-start" role="alert">
+      <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+      <div>
+        <strong>You are not receiving requests yet.</strong>
+        Requests are only sent to guardians who are approved, <em>on duty</em> and have a <em>saved location</em>.
+        <ol class="mb-0 mt-2 ps-3">
+          <li class="{{ 'text-decoration-line-through text-muted' if profile.latitude is not none }}">Choose an area under <strong>My location</strong> and press <strong>Save location</strong>.</li>
+          <li>Press <strong>Go on duty</strong>.</li>
+        </ol>
+      </div>
+    </div>
+  {% endif %}
+  </div>
+
   {# ---------- metrics ---------- #}
-  <div class="row g-3 mb-4">
+  <div class="row g-3 mb-4" data-live="g-metrics">
     <div class="col-6 col-lg-3">{{ stat_card('check2-circle', 'Accepted', data.metrics.accepted, 'green') }}</div>
     <div class="col-6 col-lg-3">{{ stat_card('x-circle', 'Declined', data.metrics.rejected, 'rose') }}</div>
     <div class="col-6 col-lg-3">{{ stat_card('award', 'Resolved', data.metrics.resolved, 'burgundy') }}</div>
@@ -26,6 +43,7 @@
   </div>
 
   {# ---------- active request(s) ---------- #}
+  <div data-live="g-active">
   {% for r in data.active %}
   <div class="card card-soft active-card mb-4">
     <div class="card-body p-4">
@@ -53,9 +71,10 @@
     </div>
   </div>
   {% endfor %}
+  </div>
 
   {# ---------- incoming requests ---------- #}
-  <div class="card card-soft mb-4">
+  <div class="card card-soft mb-4" data-live="g-incoming">
     <div class="card-header bg-transparent border-0 pt-4 px-4">
       <h2 class="h5 mb-0"><i class="bi bi-inbox me-2 text-rose"></i>Incoming requests ({{ data.incoming|length }})</h2>
     </div>
@@ -165,7 +184,7 @@
     </div>
 
     <div class="col-12">
-      <div class="card card-soft">
+      <div class="card card-soft" data-live="g-history">
         <div class="card-header bg-transparent border-0 pt-4 px-4">
           <h2 class="h5 mb-0"><i class="bi bi-clock-history me-2 text-rose"></i>My recent responses</h2>
         </div>

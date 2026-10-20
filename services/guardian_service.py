@@ -7,6 +7,7 @@ from models import (
     User,
     utcnow,
 )
+from services.matching import match_open_requests
 from services.notifications import notify
 
 # Simulated area presets (Ghaziabad) so a guardian can "move" around during the demo.
@@ -60,6 +61,7 @@ def set_location(profile, lat, lng, simulated=True):
     profile.longitude = round(float(lng), 6)
     profile.location_is_simulated = bool(simulated)
     db.session.commit()
+    match_open_requests(profile)   # no-op unless the guardian is on duty
 
 
 def toggle_duty(profile):
@@ -71,7 +73,9 @@ def toggle_duty(profile):
     profile.on_duty = not profile.on_duty
     db.session.commit()
     if profile.on_duty:
-        return True, "You are now ON duty. Nearby requests can be matched to you."
+        added = match_open_requests(profile)
+        extra = f" {added} open request(s) were matched to you." if added else ""
+        return True, "You are now ON duty. Nearby requests can be matched to you." + extra
     return True, "You are now OFF duty."
 
 

@@ -11,7 +11,47 @@
 
   <div class="row g-4">
     <div class="col-lg-8">
-      <div class="card card-soft">
+      {# ---------- live tracker for the latest request ---------- #}
+      <div data-live="u-tracker">
+      {% set latest = my_requests[0] if my_requests else none %}
+      {% if latest %}
+      {% set matched = latest.matches | length %}
+      {% set accepted = latest.status in ['accepted', 'resolved'] %}
+      <div class="card card-soft tracker-card mb-4">
+        <div class="card-body p-4">
+          <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+            <h2 class="h5 mb-0"><i class="bi bi-broadcast-pin me-2 text-rose"></i>Request #{{ latest.id }}</h2>
+            {{ status_badge(latest.status) }}
+          </div>
+          {% if latest.status == 'cancelled' %}
+            <p class="text-muted mb-0">This request was cancelled.</p>
+          {% else %}
+          <ol class="tracker">
+            <li class="done"><span class="tracker-dot"><i class="bi bi-check-lg"></i></span>
+              <div><div class="fw-semibold">In-app alert created</div><div class="small text-muted">{{ latest.created_at | ago }} (demo)</div></div></li>
+            <li class="{{ 'done' if matched else 'current' }}"><span class="tracker-dot">{% if matched %}<i class="bi bi-check-lg"></i>{% endif %}</span>
+              <div><div class="fw-semibold">Nearby guardians notified</div>
+              <div class="small text-muted">{% if matched %}{{ matched }} approved guardian{{ 's' if matched != 1 }} on duty were notified in-app{% else %}No approved guardian was on duty nearby{% endif %}</div></div></li>
+            <li class="{{ 'done' if accepted else ('current' if matched else '') }}"><span class="tracker-dot">{% if accepted %}<i class="bi bi-check-lg"></i>{% endif %}</span>
+              <div><div class="fw-semibold">A guardian accepts</div>
+              <div class="small text-muted">{% if accepted %}{{ latest.accepted_by.name }} accepted {{ latest.accepted_at | ago }}{% elif matched %}Waiting for a guardian to respond...{% else %}-{% endif %}</div></div></li>
+            <li class="{{ 'done' if latest.status == 'resolved' else ('current' if accepted else '') }}"><span class="tracker-dot">{% if latest.status == 'resolved' %}<i class="bi bi-check-lg"></i>{% endif %}</span>
+              <div><div class="fw-semibold">Marked as resolved</div>
+              <div class="small text-muted">{% if latest.status == 'resolved' %}{{ latest.resolved_at | ago }}{% else %}-{% endif %}</div></div></li>
+          </ol>
+          {% endif %}
+          {% if latest.status == 'pending' %}
+          <form method="post" action="{{ url_for('demo.cancel', request_id=latest.id) }}" class="mt-3">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-x-circle me-1"></i>Cancel this request</button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+      </div>
+
+      <div class="card card-soft" data-live="u-history">
         <div class="card-header bg-transparent border-0 pt-4 px-4">
           <h2 class="h5 mb-0"><i class="bi bi-clock-history me-2 text-rose"></i>My emergency requests</h2>
         </div>
@@ -48,6 +88,20 @@
     </div>
 
     <div class="col-lg-4">
+      <div class="card card-soft info-card mb-4">
+        <div class="card-body p-4">
+          <h2 class="h6"><i class="bi bi-lightning-charge-fill me-2"></i>Try a demo emergency</h2>
+          <p class="small">Stands in for the SOS button (built by another team member). It alerts the nearest on-duty guardians in-app only. No SMS or call is made.</p>
+          <form method="post" action="{{ url_for('demo.emergency') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label for="preset" class="form-label small mb-1">Simulated location</label>
+            <select class="form-select mb-3" id="preset" name="preset" required>
+              {% for key, item in presets.items() %}<option value="{{ key }}">{{ item[0] }}</option>{% endfor %}
+            </select>
+            <button class="btn btn-rose w-100"><i class="bi bi-lightning-charge me-1"></i>Send demo alert</button>
+          </form>
+        </div>
+      </div>
       <div class="card card-soft mb-4">
         <div class="card-body p-4">
           <h2 class="h5"><i class="bi bi-person-badge me-2 text-rose"></i>My account</h2>

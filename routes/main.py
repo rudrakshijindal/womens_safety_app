@@ -4,6 +4,7 @@ from flask_login import current_user, login_required
 from extensions import db
 from models import EmergencyRequest, Notification
 from services.auth import home_for, role_required
+from services.guardian_service import PRESET_LOCATIONS
 
 bp = Blueprint("main", __name__)
 
@@ -22,7 +23,7 @@ def dashboard():
         .limit(10)
         .all()
     )
-    return render_template("user/dashboard.html", my_requests=my_requests)
+    return render_template("user/dashboard.html", my_requests=my_requests, presets=PRESET_LOCATIONS)
 
 
 @bp.post("/notifications/read-all")

@@ -6,17 +6,17 @@
 <div class="container py-4 py-md-5">
   <div class="page-head mb-4">
     <h1 class="section-title mb-1">Admin dashboard</h1>
-    <p class="text-muted mb-0">Live numbers calculated from the database.</p>
+    <p class="text-muted mb-0">Live numbers calculated from the database. This page updates by itself.</p>
   </div>
 
-  <div class="row g-4">
+  <div class="row g-4" data-live="a-cards">
     <div class="col-sm-6 col-lg-3">{{ stat_card('people-fill', 'Registered users', stats.users, 'rose') }}</div>
     <div class="col-sm-6 col-lg-3">{{ stat_card('patch-check-fill', 'Approved guardians', stats.approved_guardians, 'green') }}</div>
     <div class="col-sm-6 col-lg-3">{{ stat_card('hourglass-split', 'Pending applications', stats.pending_guardians, 'amber') }}</div>
     <div class="col-sm-6 col-lg-3">{{ stat_card('broadcast', 'Guardians on duty', stats.on_duty_guardians, 'burgundy') }}</div>
   </div>
 
-  <div class="row g-4 mt-1">
+  <div class="row g-4 mt-1" data-live="a-chart">
     <div class="col-lg-7">
       <div class="card card-soft h-100">
         <div class="card-body p-4">

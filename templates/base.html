@@ -63,11 +63,13 @@
               <button class="btn btn-nav-icon position-relative" type="button" data-bs-toggle="dropdown"
                       data-bs-auto-close="outside" aria-expanded="false" aria-label="Notifications">
                 <i class="bi bi-bell-fill"></i>
-                {% if unread_count %}
-                  <span class="badge-count">{{ unread_count if unread_count < 10 else '9+' }}</span>
-                {% endif %}
+                {% set unread_list = recent_notifications | rejectattr('is_read') | list %}
+                <span id="bell-badge" data-live="bell-badge" data-unread="{{ unread_count }}"
+                      data-latest="{{ unread_list[0].message if unread_list else '' }}">
+                  {% if unread_count %}<span class="badge-count">{{ unread_count if unread_count < 10 else '9+' }}</span>{% endif %}
+                </span>
               </button>
-              <div class="dropdown-menu dropdown-menu-end notif-menu p-0">
+              <div class="dropdown-menu dropdown-menu-end notif-menu p-0" id="bell-menu" data-live="bell-menu">
                 <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
                   <strong>Notifications</strong>
                   {% if unread_count %}
@@ -142,7 +144,12 @@
     </div>
   </footer>
 
+  <div class="toast-container position-fixed top-0 end-0 p-3 live-toasts" id="liveToasts" aria-live="polite" aria-atomic="true"></div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  {% if current_user.is_authenticated %}
+  <script src="{{ url_for('static', filename='js/live.js') }}" defer></script>
+  {% endif %}
   {% block scripts %}{% endblock %}
 </body>
 </html>
