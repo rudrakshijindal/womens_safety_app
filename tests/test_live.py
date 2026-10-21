@@ -132,3 +132,21 @@ def test_guardian_going_on_duty_later_still_gets_open_requests(app, make_user):
     body = gc.get("/guardian/dashboard").data
     assert b"You are not receiving requests yet" not in body
     assert b"Incoming requests (1)" in body and b">Accept</button>" in body
+
+
+def test_fresh_start_creates_tables_without_init_db(tmp_path):
+    """A teammate who clones the repo and forgets `flask init-db` must not get 'no such table'."""
+    from app import create_app
+    from config import Config
+    from models import User
+
+    class FreshConfig(Config):
+        SQLALCHEMY_DATABASE_URI = f"sqlite:///{(tmp_path / 'fresh.db').as_posix()}"
+        WTF_CSRF_ENABLED = False
+
+    fresh = create_app(FreshConfig)
+    with fresh.app_context():
+        assert User.query.count() == 0
+    c = fresh.test_client()
+    assert c.get("/").status_code == 200
+    assert c.post("/login", data={"email": "a@b.com", "password": "x"}).status_code == 401  # normal "wrong login", not a 500 crash

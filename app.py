@@ -118,6 +118,12 @@ def create_app(config_object=Config):
         db.session.commit()
         click.echo(f"Admin account created for {email}.")
 
+    # Create any missing tables at start-up, so a fresh clone works even if `init-db` was skipped.
+    # (Safe to repeat: existing tables and data are never touched.)
+    if not app.config.get("TESTING"):
+        with app.app_context():
+            db.create_all()
+
     return app
 
 
