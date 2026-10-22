@@ -1,0 +1,35 @@
+{# Form + confirm/cancel modal. The trigger button lives in the including page. #}
+<form id="sos-form" method="post" action="{{ url_for('sos.create') }}" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="location_source" id="sos-location-source" value="">
+  <input type="hidden" name="latitude" id="sos-latitude" value="">
+  <input type="hidden" name="longitude" id="sos-longitude" value="">
+
+  <div class="modal fade" id="sosModal" tabindex="-1" aria-labelledby="sosModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="sosModalLabel">Send an SOS request?</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>
+            This creates an emergency request inside this app and matches it to approved
+            guardians who are on duty near you.
+          </p>
+          <p>
+            When you confirm, your browser will ask to share your location. If you decline,
+            or location is unavailable, a <strong>simulated demo location</strong> is used and
+            the request is clearly labelled as simulated.
+          </p>
+          <p class="mb-2"><strong>Demo status:</strong> no SMS, call or police alert is sent.</p>
+          <p id="sos-status" class="small mb-0" role="status" aria-live="polite"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-rose" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-rose" id="sos-confirm">Confirm and send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>

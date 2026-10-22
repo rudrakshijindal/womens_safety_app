@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
+SOS_SIMULATED_LATITUDE = float(os.environ.get("SOS_SIMULATED_LATITUDE", "28.6139"))
+SOS_SIMULATED_LONGITUDE = float(os.environ.get("SOS_SIMULATED_LONGITUDE", "77.2090"))
 
 
 class Config:
