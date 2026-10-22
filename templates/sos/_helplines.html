@@ -1,0 +1,21 @@
+<section class="card card-soft" aria-labelledby="helplines-heading">
+  <div class="card-body p-4">
+    <h2 id="helplines-heading" class="h5">Helplines</h2>
+    <p>
+      If you are in danger, contact these numbers from your phone. This app does not
+      call them for you.
+    </p>
+    <ul class="list-unstyled mb-3">
+      {% for h in helplines %}
+        <li class="d-flex flex-wrap align-items-baseline gap-2 mb-2">
+          <strong class="fs-4">{{ h.number }}</strong>
+          <span>{{ h.name }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+    <p class="small demo-note p-3 mb-0">
+      <strong>Please verify:</strong> these numbers are listed for convenience and may change.
+      Check them against an official government source before relying on them.
+    </p>
+  </div>
+</section>

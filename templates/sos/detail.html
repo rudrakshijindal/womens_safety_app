@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}SOS request #{{ emergency.id }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <h1 class="h3 mb-0">SOS request #{{ emergency.id }}</h1>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-rose" href="{{ url_for('sos.detail', request_id=emergency.id) }}">
+        <i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i>Refresh status
+      </a>
+      <a class="btn btn-outline-rose" href="{{ url_for('sos.index') }}">Back to SOS center</a>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-7 d-flex flex-column gap-4">
+      <section class="card card-soft" aria-labelledby="status-heading">
+        <div class="card-body p-4">
+          <h2 id="status-heading" class="h5 mb-3">Status</h2>
+          <p class="mb-2">
+            <span class="badge fs-6 text-bg-{{ view.status_badge }}">{{ view.status_text }}</span>
+          </p>
+          {% if view.status_description %}<p>{{ view.status_description }}</p>{% endif %}
+
+          <dl class="row mb-0">
+            <dt class="col-sm-4">Created</dt>
+            <dd class="col-sm-8">{{ emergency.created_at|ist }} IST</dd>
+
+            {% if view.accepted_by_name %}
+              <dt class="col-sm-4">Accepted by</dt>
+              <dd class="col-sm-8">
+                {{ view.accepted_by_name }}
+                {% if emergency.accepted_at %}<span class="small text-muted-custom">({{ emergency.accepted_at|ist }} IST)</span>{% endif %}
+              </dd>
+            {% endif %}
+
+            <dt class="col-sm-4">Location</dt>
+            <dd class="col-sm-8 mb-0">
+              {{ view.location_label }}
+              {% if emergency.latitude is not none and emergency.longitude is not none %}
+                <br><span class="small text-muted-custom">
+                  Used for matching (approximate): {{ '%.3f'|format(emergency.latitude) }}, {{ '%.3f'|format(emergency.longitude) }}
+                </span>
+              {% endif %}
+            </dd>
+          </dl>
+        </div>
+      </section>
+
+      <section aria-labelledby="delivery-heading">
+        <div class="demo-note p-4">
+          <h2 id="delivery-heading" class="h5">Delivery (demo)</h2>
+          <p class="mb-0">{{ view.delivery_label }}</p>
+        </div>
+      </section>
+
+      <section class="card card-soft" aria-labelledby="guardians-heading">
+        <div class="card-body p-4">
+          <h2 id="guardians-heading" class="h5 mb-3">Matched guardians</h2>
+          {% if view.guardians %}
+            <p class="small text-muted-custom">
+              Guardians approved by an admin and on duty, matched by distance. Only approximate
+              distance is shown.
+            </p>
+            <ul class="list-group list-group-flush">
+              {% for g in view.guardians %}
+                <li class="list-group-item d-flex flex-wrap justify-content-between gap-2 px-0">
+                  <span>{{ g.name }}</span>
+                  <span>About {{ '%.1f'|format(g.distance_km) }} km away</span>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="mb-0">
+              No approved guardian on duty was found near this location. If you are in danger,
+              contact the helplines below.
+            </p>
+          {% endif %}
+        </div>
+      </section>
+
+      <section class="card card-soft" aria-labelledby="contacts-heading">
+        <div class="card-body p-4">
+          <h2 id="contacts-heading" class="h5 mb-3">Trusted contacts linked to this request</h2>
+          {% if view.contacts %}
+            <ul class="list-group list-group-flush">
+              {% for c in view.contacts %}
+                <li class="list-group-item d-flex flex-wrap justify-content-between gap-2 px-0">
+                  <span>{{ c.name }}</span>
+                  <span class="text-muted-custom">{{ c.phone_masked }}</span>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="mb-2">You had no trusted contacts when this request was created.</p>
+          {% endif %}
+          <p class="small text-muted-custom mt-3 mb-0">
+            Demo status: contacts are linked to this request in the app only. No SMS or call was sent to them.
+          </p>
+        </div>
+      </section>
+    </div>
+
+    <div class="col-lg-5">
+      {% include "sos/_helplines.html" %}
+    </div>
+  </div>
+</div>
+{% endblock %}

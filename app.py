@@ -40,8 +40,9 @@ def create_app(config_object=Config):
     from routes.demo import bp as demo_bp
     from routes.guardian import bp as guardian_bp
     from routes.main import bp as main_bp
+    from routes.sos import bp as sos_bp            # NEW (Step 2.3)
 
-    for blueprint in (main_bp, auth_bp, guardian_bp, admin_bp, demo_bp):
+    for blueprint in (main_bp, auth_bp, guardian_bp, admin_bp, demo_bp, sos_bp):
         app.register_blueprint(blueprint)
 
     # ---- template helpers ----
