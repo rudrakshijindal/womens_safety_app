@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block head_extra %}
+<style>
+  .notification {
+    background: var(--surface, #ffffff);
+    border: 1px solid var(--border, #e3dcde);
+    border-left-width: 4px;
+    border-radius: 0.5rem;
+    padding: 1rem;
+  }
+  .notification[data-state="unread"] {
+    background: var(--rose-100, #f4e4e8);
+    border-left-color: var(--burgundy-600, #8c2748);
+  }
+  .notification[data-state="unread"] .notification-message { font-weight: 600; }
+  .notification[data-state="read"] { color: var(--muted, #5c5155); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+      <h1 class="h3 mb-1">Notifications</h1>
+      <p class="mb-0 text-muted-custom">
+        {% if unread == 0 %}
+          You have no unread notifications.
+        {% else %}
+          You have {{ unread }} unread notification{{ '' if unread == 1 else 's' }}.
+        {% endif %}
+      </p>
+    </div>
+
+    {% if unread %}
+      <form method="post" action="{{ url_for('notifications.mark_all_read') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="page" value="{{ page }}">
+        <button type="submit" class="btn btn-rose">Mark all as read</button>
+      </form>
+    {% endif %}
+  </div>
+
+  {% if items %}
+    <ol class="list-unstyled d-flex flex-column gap-3 mb-0">
+      {% for item in items %}
+        <li class="notification" data-state="{{ 'read' if item.is_read else 'unread' }}">
+          <div class="d-flex flex-wrap justify-content-between gap-2">
+            <span class="small text-uppercase fw-semibold">{{ item.type_label }}</span>
+            <span class="small">
+              {% if not item.is_read %}<span class="badge text-bg-warning me-2">Unread</span>{% endif %}
+              <time datetime="{{ item.created_at.isoformat() }}Z">{{ item.created_at|ist }} IST</time>
+              ({{ item.created_at|ago }})
+            </span>
+          </div>
+
+          <p class="notification-message my-2">{{ item.message }}</p>
+
+          <div class="d-flex flex-wrap gap-2">
+            {% if item.link %}
+              <a class="btn btn-sm btn-outline-rose" href="{{ item.link }}">Open</a>
+            {% endif %}
+            {% if not item.is_read %}
+              <form method="post" action="{{ url_for('notifications.mark_read', notification_id=item.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="page" value="{{ page }}">
+                <button type="submit" class="btn btn-sm btn-rose">Mark as read</button>
+              </form>
+            {% endif %}
+          </div>
+        </li>
+      {% endfor %}
+    </ol>
+
+    {% if pages > 1 %}
+      <nav class="mt-4" aria-label="Notification pages">
+        <div class="d-flex flex-wrap align-items-center gap-3">
+          {% if page > 1 %}
+            <a class="btn btn-outline-rose" href="{{ url_for('notifications.index', page=page - 1) }}">Newer</a>
+          {% endif %}
+          <span>Page {{ page }} of {{ pages }}</span>
+          {% if page < pages %}
+            <a class="btn btn-outline-rose" href="{{ url_for('notifications.index', page=page + 1) }}">Older</a>
+          {% endif %}
+        </div>
+      </nav>
+    {% endif %}
+  {% else %}
+    <div class="card card-soft">
+      <div class="card-body p-4">
+        <p class="mb-0">You have no notifications yet.</p>
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="demo-note p-3 mt-4">
+    <strong>Demo status:</strong> notifications are shown inside this app only. No SMS, call or
+    email is sent.
+  </div>
+</div>
+{% endblock %}
