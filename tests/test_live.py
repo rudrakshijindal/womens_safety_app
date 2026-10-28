@@ -20,7 +20,7 @@ def test_live_script_is_served_and_loaded_when_logged_in(app):
 def test_dashboards_have_live_regions(app):
     seed()
     expected = {
-        "riya@safecircle.demo": [b'data-live="u-history"', b'data-live="bell-badge"'],
+        "riya@safecircle.demo": [b'data-live="u-history"', b'data-live="bell"'],
         "priya@safecircle.demo": [b'data-live="g-incoming"', b'data-live="g-active"', b'data-live="g-metrics"'],
         "admin@safecircle.demo": [b'data-live="a-cards"', b'data-live="a-chart"'],
     }
@@ -49,7 +49,9 @@ def test_user_demo_emergency_reaches_guardians_and_updates_bell(app):
 
     page = guardian.get("/guardian/dashboard").data
     assert b'data-unread="1"' in page                       # bell badge data a live poll reads
-    assert b"New emergency request" in page                 # toast text
+    assert b"New emergency request" not in page             # message text stays out of the page...
+    latest = guardian.get("/live/latest-notification").get_json()
+    assert "New emergency request" in latest["message"]     # ...and comes from the toast endpoint
     assert b"Accept" in page
 
     tracker = user.get("/dashboard").data

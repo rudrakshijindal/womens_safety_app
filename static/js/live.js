@@ -57,7 +57,7 @@
       Array.prototype.forEach.call(fresh.attributes, function (a) {
         if (a.name.indexOf("data-") === 0) cur.setAttribute(a.name, a.value);
       });
-      if (cur.id !== "bell-badge" && cur.id !== "bell-menu") {
+      if (cur.id !== "bell-link") {
         cur.classList.remove("live-flash");
         void cur.offsetWidth;            // restart the highlight animation
         cur.classList.add("live-flash");
@@ -65,10 +65,15 @@
       changed = true;
     });
 
-    var badge = doc.getElementById("bell-badge");
+    var badge = doc.getElementById("bell-link");
     if (badge) {
       var unread = parseInt(badge.getAttribute("data-unread") || "0", 10);
-      if (prevUnread !== null && unread > prevUnread) toast(badge.getAttribute("data-latest"));
+      if (prevUnread !== null && unread > prevUnread) {
+        fetch("/live/latest-notification", { credentials: "same-origin", cache: "no-store" })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (d) { if (d && d.message) toast(d.message); })
+          .catch(function () {});
+      }
       prevUnread = unread;
     }
     return changed;
@@ -103,7 +108,7 @@
   function stop() { if (timer) { clearInterval(timer); timer = null; } }
 
   // remember the starting unread count so only NEW notifications trigger a toast
-  var first = document.getElementById("bell-badge");
+  var first = document.getElementById("bell-link");
   if (first) prevUnread = parseInt(first.getAttribute("data-unread") || "0", 10);
 
   document.addEventListener("visibilitychange", function () {

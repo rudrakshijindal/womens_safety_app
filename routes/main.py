@@ -1,4 +1,4 @@
-from flask import Blueprint, redirect, render_template
+from flask import Blueprint, jsonify, redirect, render_template
 from flask_login import current_user, login_required
 
 from extensions import db
@@ -32,3 +32,18 @@ def mark_notifications_read():
     Notification.query.filter_by(user_id=current_user.id, is_read=False).update({"is_read": True})
     db.session.commit()
     return redirect(home_for(current_user))
+
+
+
+@bp.get("/live/latest-notification")
+@login_required
+def latest_notification():
+    """Newest unread notification text, used only for the pop-up (toast) in live.js."""
+    note = (
+        Notification.query.filter_by(user_id=current_user.id, is_read=False)
+        .order_by(Notification.created_at.desc(), Notification.id.desc())
+        .first()
+    )
+    response = jsonify({"message": note.message if note else ""})
+    response.headers["Cache-Control"] = "no-store"
+    return response

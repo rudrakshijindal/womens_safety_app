@@ -21,7 +21,10 @@
         <div class="card-body p-4">
           <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
             <h2 class="h5 mb-0"><i class="bi bi-broadcast-pin me-2 text-rose"></i>Request #{{ latest.id }}</h2>
-            {{ status_badge(latest.status) }}
+            <div class="d-flex align-items-center gap-2">
+              {{ status_badge(latest.status) }}
+              {% if endpoint_exists('sos.detail') %}<a class="small" href="{{ url_for('sos.detail', request_id=latest.id) }}">Details</a>{% endif %}
+            </div>
           </div>
           {% if latest.status == 'cancelled' %}
             <p class="text-muted mb-0">This request was cancelled.</p>
@@ -90,16 +93,17 @@
     <div class="col-lg-4">
       <div class="card card-soft info-card mb-4">
         <div class="card-body p-4">
-          <h2 class="h6"><i class="bi bi-lightning-charge-fill me-2"></i>Try a demo emergency</h2>
-          <p class="small">Stands in for the SOS button (built by another team member). It alerts the nearest on-duty guardians in-app only. No SMS or call is made.</p>
-          <form method="post" action="{{ url_for('demo.emergency') }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <label for="preset" class="form-label small mb-1">Simulated location</label>
-            <select class="form-select mb-3" id="preset" name="preset" required>
-              {% for key, item in presets.items() %}<option value="{{ key }}">{{ item[0] }}</option>{% endfor %}
-            </select>
-            <button class="btn btn-rose w-100"><i class="bi bi-lightning-charge me-1"></i>Send demo alert</button>
-          </form>
+          <h2 class="h6"><i class="bi bi-lightning-charge-fill me-2"></i>Quick actions</h2>
+          <div class="d-grid gap-2">
+            {% if endpoint_exists('sos.index') %}
+              <a class="btn btn-rose" href="{{ url_for('sos.index') }}"><i class="bi bi-exclamation-triangle-fill me-2"></i>Open SOS center</a>
+            {% endif %}
+            {% if endpoint_exists('journey.index') %}
+              <a class="btn btn-outline-rose" href="{{ url_for('journey.index') }}"><i class="bi bi-geo-alt me-2"></i>Start a safe journey</a>
+            {% endif %}
+            <a class="btn btn-outline-rose" href="{{ url_for('notifications.index') }}"><i class="bi bi-bell me-2"></i>Notifications</a>
+          </div>
+          <p class="small mt-3 mb-0">Alerts are in-app demo records. No SMS or call is made.</p>
         </div>
       </div>
       <div class="card card-soft mb-4">
